@@ -1,52 +1,54 @@
-#include <stdio.h>
+#include <cstdio>
+#include <iostream>
 #include <algorithm>
+
+long long getwhite(int x1, int y1, int x2, int y2)
+{
+  int n = y2 - y1 + 1;
+  int m = x2 - x1 + 1;
+  long long w;
+
+  w = (long long)(n*m) / 2;
+  if ((n%2) && (m%2) && ((long long)(x1+y1)%2) == 0)
+    w += 1;
+  return w;
+}
+
+long long getblack(int x1, int y1, int x2, int y2)
+{
+  int n = y2 - y1 + 1;
+  int m = x2 - x1 + 1;
+
+  return (long long)(n*m) - getwhite(x1, y1, x2, y2);
+}
 
 int main(int argc, char *argv[])
 {
-	int t;
-	int n, m;
-	int x1, x2, x3, x4;
-  int y1, y2, y3, y4;
-	int w, b;
-	int xi, yi, xa, ya;
-	long long wa, ba, oa;
+  int t;
+  int n, m;
+  int x1, y1, x2, y2, x3, y3, x4, y4;
+  int ox1, oy1, ox2, oy2;     // overlap area
+  long long w;
 
-	scanf("%d", &t);
-	while(t--) {
-		scanf("%d %d", &n, &m);
-		scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
-		scanf("%d %d %d %d", &x3, &y3, &x4, &y4);
+  scanf("%d", &t);
 
-		x1 -= 1;
-		y1 -= 1;
-		x3 -= 1;
-		y3 -= 1;
+  while (t--) {
+    scanf("%d %d", &n, &m);   // n : row, m : column
 
-		// get overlap region
-		xi = std::max(x1, x3);
-		yi = std::max(y1, y3);
-		xa = std::min(x2, x4);
-		ya = std::min(y2, y4);
+    scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
+    scanf("%d %d %d %d", &x3, &y3, &x4, &y4);
 
-		wa = (x2 - x1) * (y2 - y1);	// white area
-		ba = (x4 - x3) * (y4 - y3); // black area
-		oa = (xa - xi) * (ya - yi);	// overlap area
+    ox1 = std::max(x1, x3);
+    oy1 = std::max(y1, y3);
+    ox2 = std::min(x2, x4);
+    oy2 = std::min(y2, y4);
 
-		printf("%lld %lld %lld\n", wa, ba, oa);
+    if (ox1 > ox2 || oy1 > oy2)
+      w = getwhite(1, 1, m, n) + getblack(x1, y1, x2, y2) - getwhite(x3, y3, x4, y4);
+    else
+      w = getwhite(1, 1, m, n) + getblack(x1, y1, x2, y2) - getblack(ox1, oy1, ox2, oy2) - getwhite(x3, y3, x4, y4);
 
-		// get original white and black tile count
-		w = (n * m) / 2;
-		b = w;
-
-		w = w + (wa / 2) - (ba / 2) - (oa / 2);
-		b = b - (wa / 2) + (ba / 2) + (oa / 2);
-
-		if (oa == 1) {
-			w = w + (((xi + yi) % 2) * -1) + (((xi + yi + 1) % 2) * 1); 
-			b = b + (((xi + yi) % 2) * 1) + (((xi + yi + 1) % 2) * -1); 
-		}
-
-		printf("%d %d\n", w, b);
-	}
-	return 0;
+    std::cout << w << " " << (long long)(n*m) - w << std::endl;
+  }
+  return 0;
 }
