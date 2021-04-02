@@ -11,18 +11,29 @@ void init(void) {
     arr_tail = arr_head;
 }
 
+bool isFull(void) {
+    if ((arr_head + 1) % N_MAX == arr_tail) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool isEmpty(void) {
     return arr_head == arr_tail;
 }
 
 int push(int data) {
-    if (arr_head == N_MAX) return 1;
+    if (isFull()) return 1;
     arr[arr_head++] = data;
+    if (arr_head > N_MAX) {
+        arr_head = 0;
+    }
     return 0;
 }
 
 int pop(void) {
-    if (arr_head == arr_tail) return 1;
+    if (isEmpty()) return 1;
     return arr[arr_tail++];
 }
 
