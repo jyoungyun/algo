@@ -1,26 +1,27 @@
 #include <stdio.h>
 
-#define N_MAX   (100 + 1)
+#define N_MAX   (100)
 
-int arr_index = -1;
+int arr_index;
 int arr[N_MAX];
 
 void init() {
-  arr_index = -1;
+  arr_index = 0;
 }
 
-void push(int data) {
-  if (arr_index == N_MAX - 1) return;
-  arr[++arr_index] = data;
+int push(int data) {
+  if (arr_index == N_MAX) return 1;
+  arr[arr_index++] = data;
+  return 0;
 }
 
-int pop() {
-  if (arr_index == -1) return -1;
-  return arr[arr_index--];
+int pop(void) {
+  if (arr_index == 0) return -1;
+  return arr[--arr_index];
 }
 
 bool isEmpty() {
-  return (arr_index == -1);
+  return (arr_index == 0);
 }
 
 int main() {
@@ -30,6 +31,7 @@ int main() {
 
   scanf("%d", &t);
   for (int i = 0; i < t; ++t) {
+    init();
     scanf("%d", &N);
     for (int j = 0; j < N; ++j) {
       scanf(" %d", &data);
