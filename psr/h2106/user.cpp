@@ -71,11 +71,13 @@ Library library[MAX_M];
 int library_length;
 
 unsigned long nameHash(const char* key) {
-	int sum = 0;
-	for (int i = 0; key[i] != '\0'; ++i) {
-		sum += key[i];
+	unsigned long hash = 5382;
+	char c;
+
+	while(c = *key++) {
+		hash = (((hash << 5) + hash) + c) % MAX_BOOKS;
 	}
-	return sum % MAX_BOOKS;
+	return hash % MAX_BOOKS;
 }
 
 int addBookHashTable(const char* key, Book* data) {
@@ -93,21 +95,12 @@ Book* findBookHashTable(const char *key) {
 	unsigned long h = nameHash(key);
 	int cnt = MAX_BOOKS;
 
-	if (mstrcmp(key, "PaXw") == 0) {
-		myprintf("Searching PaXw...");
-	}
 	while (bookHash[h].key[0] != 0 && cnt--) {
 		if (mstrcmp(bookHash[h].key, key) == 0) {
-			if (mstrcmp(key, "PaXw") == 0) {
-				myprintf("return %s\n", bookHash[h].data->name);
-			}
 			return bookHash[h].data;
 		}
 		h = (h + 1) % MAX_BOOKS;
 	}
-				if (mstrcmp(key, "PaXw") == 0) {
-				myprintf("null???");
-			}
 	return nullptr;
 }
 
@@ -125,11 +118,13 @@ Book* deleteBookHashTable(const char *key) {
 }
 
 int typeHash(const char* key) {
-	int sum = 0;
-	for (int i = 0; key[i] != '\0'; ++i) {
-		sum += key[i];
+	unsigned long hash = 5382;
+	char c;
+
+	while(c = *key++) {
+		hash = (((hash << 5) + hash) + c) % MAX_TYPES;
 	}
-	return sum % MAX_TYPES;
+	return hash % MAX_TYPES;
 }
 
 int addTypeHashTable(int mSection, const char *key, BookNode *node) {
@@ -268,7 +263,6 @@ void init(int M)
 
 void add(char mName[MAX_NAME_LEN], int mTypeNum, char mTypes[MAX_N][MAX_TAG_LEN], int mSection)
 {
-	myprintf("%s %d %d\n", mName, mTypeNum, mSection);
 	Book *book = &books[books_length++];
 	mstrcpy(book->name, mName);
 	book->typeLen = mTypeNum;
@@ -285,17 +279,12 @@ void add(char mName[MAX_NAME_LEN], int mTypeNum, char mTypes[MAX_N][MAX_TAG_LEN]
 		bookNode->next = nullptr;
 		addTypeHashTable(mSection, mTypes[i], bookNode);
 	}
-
-	debugPrint();
 }
 
 int moveType(char mType[MAX_TAG_LEN], int mFrom, int mTo)
 {
 	BookNode *fromList = deleteTypeHashTable(mFrom, mType);
-	if (fromList == nullptr) {
-		myprintf("Must not happen this case, No list");
-		return 1;
-	}
+	assertStr(fromList != nullptr, "Must not happen this case, No list\n");
 
 	int count = 0;
 	for (BookNode *p = fromList; p != nullptr; p = p->next) {
@@ -312,19 +301,13 @@ int moveType(char mType[MAX_TAG_LEN], int mFrom, int mTo)
 	}
 
 	addTypeHashTable(mTo, mType, fromList);
-
-	debugPrint();
 	return count;
 }
 
 void moveName(char mName[MAX_NAME_LEN], int mSection)
 {
-	debugBookPrint(mName);
 	Book* book = findBookHashTable(mName);
-	if (book == nullptr) {
-		myprintf("Must not happen this case, No book\n");
-		return;
-	}
+	assertStr(book != nullptr, "Must not happen this case, No book\n");
 
 	for (int i = 0; i < book->typeLen; ++i) {
 		BookNode *node = deleteBookTypeHashTable(book->section, book->types[i], mName);
@@ -333,49 +316,31 @@ void moveName(char mName[MAX_NAME_LEN], int mSection)
 	}
 
 	book->section = mSection;
-
-	debugPrint();
 }
 
 void deleteName(char mName[MAX_NAME_LEN])
 {
-	if (mstrcmp(mName, "PaXw") == 0) {
-		debugAllBookPrint();
-	}
-	debugBookPrint(mName);
 	Book* book = deleteBookHashTable(mName);
 
 	for (int i = 0; i < book->typeLen; ++i) {
 		deleteBookTypeHashTable(book->section, book->types[i], mName);
 	}
-
-	debugPrint();
 }
 
 int countBook(int mTypeNum, char mTypes[MAX_N][MAX_TAG_LEN], int mSection)
 {
-	debugPrint();
+	for (int i = 0; i < books_length; ++i) {
+		Book *book = &books[i];
+		book->checked = 0;
+	}
+
 	int total = 0;
 	for (int i = 0; i < mTypeNum; ++i) {
-		myprintf("type: %s\n", mTypes[i]);
 		BookNode *node = findTypeHashTable(mSection, mTypes[i]);
-		myprintf("node: %p\n", node);
 		for (BookNode *p = node; p != nullptr; p = p->next) {
-			myprintf("book: %s(%c)\n", p->data->name, p->data->checked);
 			if (p->data->checked == 0) {
 				total++;
 				p->data->checked = 1;
-			}
-		}
-	}
-
-	for (int i = 0; i < mTypeNum; ++i) {
-		BookNode *node = findTypeHashTable(mSection, mTypes[i]);
-		for (BookNode *p = node; p != nullptr; p = p->next) {
-			myprintf("book: %s(%c)\n", p->data->name, p->data->checked);
-			if (p->data->checked == 1) {
-				myprintf("removed!\n");
-				p->data->checked = 0;
 			}
 		}
 	}
